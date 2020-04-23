@@ -1,6 +1,7 @@
 package com.evolutiongaming.bootcamp.basics
 
 object ClassesAndTraits {
+
   // You can follow your progress using the tests in `ClassesAndTraitsSpec`.
 
   // Classes in Scala are blueprints for creating objects. They can contain methods, values, variables,
@@ -18,7 +19,7 @@ object ClassesAndTraits {
 
   val point1 = new MutablePoint(3, 4)
   println(point1.x) // 3.0
-  println(point1)   // (3.0, 4.0)
+  println(point1) // (3.0, 4.0)
 
   // Question. Is MutablePoint a good design? Why or why not?
 
@@ -32,30 +33,48 @@ object ClassesAndTraits {
 
   sealed trait Located {
     def x: Double
+
     def y: Double
   }
 
   sealed trait Bounded {
     def minX: Double
+
     def maxX: Double
+
     def minY: Double
+
     def maxY: Double
   }
 
   final case class Point(x: Double, y: Double) extends Shape {
     override def minX: Double = x
+
     override def maxX: Double = x
+
     override def minY: Double = y
+
     override def maxY: Double = y
   }
 
   final case class Circle(centerX: Double, centerY: Double, radius: Double) extends Shape {
-    override def x: Double = ???
-    override def y: Double = ???
-    override def minX: Double = ???
-    override def maxX: Double = ???
-    override def minY: Double = ???
-    override def maxY: Double = ???
+    override def x: Double = centerX
+
+    override def y: Double = centerY
+
+    override def minX: Double = x - radius
+
+    override def maxX: Double = x + radius
+
+    override def minY: Double = y - radius
+
+    override def maxY: Double = y + radius
+  }
+
+  final case class Rectangle(minX: Double, maxX: Double, minY: Double, maxY: Double) extends Shape {
+    override def x: Double = (minX + maxX) / 2
+
+    override def y: Double = (minY - maxY) / 2
   }
 
   // Case Classes
@@ -76,8 +95,8 @@ object ClassesAndTraits {
 
   val shape: Shape = point2
   val point2Description = shape match {
-    case Point(x, y)  => s"x = $x, y = $y"
-    case _            => "other shape"
+    case Point(x, y) => s"x = $x, y = $y"
+    case _ => "other shape"
   }
 
   val point3 = point2.copy(x = 3)
@@ -92,16 +111,21 @@ object ClassesAndTraits {
 
       // if needed, fix the code to be correct
       override def minX: Double = objects.map(_.minX).min
-      override def maxX: Double = objects.map(_.minX).min
-      override def minY: Double = objects.map(_.minX).min
-      override def maxY: Double = objects.map(_.minX).min
+
+      override def maxX: Double = objects.map(_.maxX).max
+
+      override def minY: Double = objects.map(_.minY).min
+
+      override def maxY: Double = objects.map(_.maxY).max
     }
+    Rectangle(objects.map(_.minX).min, objects.map(_.maxX).max, objects.map(_.minY).min, objects.map(_.maxY).max)
   }
 
   // Pattern matching and exhaustiveness checking
   def describe(x: Shape): String = x match {
     case Point(x, y) => s"Point(x = $x, y = $y)"
     case Circle(centerX, centerY, radius) => s"Circle(centerX = $centerX, centerY = $centerY, radius = $radius)"
+    case Rectangle(minX, maxX, minY, maxY) => s"Rectangle(minX = $minX, maxX = $maxX, minY = $minY, maxY = $maxY)"
   }
 
   // Exercise. Add another Shape class called Rectangle and check that the compiler catches that we are
@@ -119,9 +143,24 @@ object ClassesAndTraits {
   // For example, you can define a Stack[A] which works with any type of element A.
   final case class Stack[A](elements: List[A] = Nil) {
     def push(x: A): Stack[A] = Stack(x :: elements)
+
     def peek: Option[A] = elements.headOption
+
     def pop: Option[(A, Stack[A])] = peek map { x =>
       (x, Stack(elements.tail))
     }
   }
+
+  val emptyStack = Stack[String]()
+  val withA = emptyStack.push("A") // Stack(List(A))
+  val withAB = withA.push("B") // Stack(List(B, A))
+  val B = withAB.peek // Some(B)
+  val result = withAB.pop // Some((B, Stack(List(A)))
+  result match {
+    case Some((x, y)) => println(s"$x, $y")
+    case None => println("nothing")
+  }
+
+  // B, Stack(List(A))
+
 }
